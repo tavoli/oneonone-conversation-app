@@ -1,0 +1,26 @@
+{
+  "name": "cdk",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-apigateway": "^1.204.0",
+    "@aws-cdk/aws-cloudfront": "^1.204.0",
+    "@aws-cdk/aws-cognito": "^1.204.0",
+    "@aws-cdk/aws-dynamodb": "^1.204.0",
+    "@aws-cdk/aws-iam": "^1.204.0",
+    "@aws-cdk/aws-lambda": "^1.204.0",
+    "@aws-cdk/aws-s3": "^1.204.0",
+    "@aws-cdk/aws-sns": "^1.204.0",
+    "@aws-cdk/aws-sqs": "^1.204.0",
+    "aws-cdk": "^2.1015.0",
+    "aws-cdk-lib": "^2.195.0",
+    "constructs": "^10.4.2"
+  }
+}
