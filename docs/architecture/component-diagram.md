@@ -4,63 +4,68 @@ This diagram represents the high-level system architecture, showing how users in
 
 ```mermaid
 graph TD
-  subgraph User
-    A[Browser Client]
-  end
+    subgraph User
+        A[Browser Client]
+    end
 
-  subgraph Frontend (S3 + CloudFront)
-    B[React App (Vite)]
-  end
+    subgraph "Frontend (S3 + CloudFront)"
+        B["React App (Vite)"]
+    end
 
-  subgraph Auth
-    C[Cognito User Pool]
-    C2[Cognito Identity Pool]
-  end
+    subgraph Auth
+        C[Cognito User Pool]
+        C2[Cognito Identity Pool]
+    end
 
-  subgraph Matchmaking
-    D[SNS FIFO Topic]
-    E[SQS FIFO Queue]
-    F[enqueueUserToQueue Lambda]
-    G[matchmakerWorker Lambda]
-  end
+    subgraph Matchmaking
+        D[SNS FIFO Topic]
+        E[SQS FIFO Queue]
+        F[enqueueUserToQueue Lambda]
+        G[matchmakerWorker Lambda]
+    end
 
-  subgraph LiveKit & Video
-    H[EC2: LiveKit Server]
-    H2[EC2: TURN Server]
-  end
+    subgraph "LiveKit & Video"
+        H[EC2: LiveKit Server]
+        H2[EC2: TURN Server]
+    end
 
-  subgraph Backend APIs
-    I[API Gateway]
-    J[generateLiveKitToken Lambda]
-    K[resetDailyPoints Lambda]
-  end
+    subgraph "Backend APIs"
+        I[API Gateway]
+        J[generateLiveKitToken Lambda]
+        K[resetDailyPoints Lambda]
+    end
 
-  subgraph Storage
-    L[DynamoDB Users Table]
-    M[DynamoDB Sessions Table]
-    N[AWS Secrets Manager]
-  end
+    subgraph Storage
+        L[DynamoDB Users Table]
+        M[DynamoDB Sessions Table]
+        N[AWS Secrets Manager]
+    end
 
-  A --> B
-  B --> C
-  B --> I
-  C --> C2
-  I --> F
-  I --> J
-  I --> K
+    A --> B
+    B --> C
+    B --> I
+    C --> C2
 
-  F --> D
-  D --> E
-  E --> G
-  G --> L
-  G --> M
+    I --> F
+    I --> J
+    I --> K
 
-  J --> L
-  J --> M
-  J --> N
+    F --> D
+    D --> E
+    E --> G
 
-  G --> H
-  B --> H
+    G --> L
+    G --> M
+    G --> H 
+
+    J --> L
+    J --> M
+    J --> N
+
+    K --> L 
+
+    B --> H 
+    H --> H2
 ```
 
 ---
