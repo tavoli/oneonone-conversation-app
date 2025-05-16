@@ -10,6 +10,6 @@
     "skipLibCheck": true,
     "outDir": "dist"
   },
-  "include": ["cdk/src/**/*.ts", "lambda/**/*.ts", "scripts/**/*.ts"]
+  "include": ["cdk/**/*.ts", "lambda/**/*.ts", "scripts/**/*.ts"]
 }
 
