@@ -1,4 +1,4 @@
-import { Stack, StackProps, Duration } from 'aws-cdk-lib';
+import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as sns from 'aws-cdk-lib/aws-sns';
@@ -9,6 +9,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 
 interface LambdaStackProps extends StackProps {
   usersTable: dynamodb.ITable;
@@ -44,7 +45,7 @@ export class LambdaStack extends Stack {
     const enqueueLambda = new lambda.Function(this, 'EnqueueLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda/enqueue'),
+      code: lambda.Code.fromAsset('dist/lambda/enqueue'),
       environment: {
         TOPIC_ARN: matchmakingTopic.topicArn,
       },
@@ -57,7 +58,7 @@ export class LambdaStack extends Stack {
     const matchmakerLambda = new lambda.Function(this, 'MatchmakerLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda/matchmaker'),
+      code: lambda.Code.fromAsset('dist/lambda/matchmaker'),
       environment: {
         QUEUE_URL: matchmakingQueue.queueUrl,
       },
@@ -67,11 +68,21 @@ export class LambdaStack extends Stack {
     sessionsTable.grantReadWriteData(matchmakerLambda);
     matchmakingQueue.grantConsumeMessages(matchmakerLambda);
 
+    // LiveKit Secret
+    const livekitSecret = new secretsmanager.Secret(this, 'LiveKitApiSecret', {
+      secretName: 'LiveKitSecret',
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ api_key: 'devkey' }),
+        generateStringKey: 'api_secret',
+        excludePunctuation: true,
+      },
+    });
+
     // Token Generator Lambda
     const tokenLambda = new lambda.Function(this, 'GenerateTokenLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda/token'),
+      code: lambda.Code.fromAsset('dist/lambda/token'),
       environment: {
         SESSION_TABLE: 'Sessions',
         USER_TABLE: 'Users',
@@ -79,6 +90,7 @@ export class LambdaStack extends Stack {
       },
     });
 
+    livekitSecret.grantRead(tokenLambda);
     usersTable.grantReadData(tokenLambda);
     sessionsTable.grantReadData(tokenLambda);
 
@@ -86,7 +98,7 @@ export class LambdaStack extends Stack {
     tokenLambda.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['secretsmanager:GetSecretValue'],
-        resources: ['*'],
+        resources: [livekitSecret.secretArn],
       })
     );
 
@@ -94,7 +106,7 @@ export class LambdaStack extends Stack {
     const resetPointsLambda = new lambda.Function(this, 'ResetPointsLambda', {
       runtime: lambda.Runtime.NODEJS_18_X,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('lambda/reset-points'),
+      code: lambda.Code.fromAsset('dist/lambda/reset-points'),
       environment: {
         USER_TABLE: 'Users',
       },

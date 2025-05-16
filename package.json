@@ -1,0 +1,19 @@
+{
+  "scripts": {
+    "build:lambdas": "bun run build-lambdas.ts",
+    "deploy": "bun run build:lambdas && cdk deploy"
+  },
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.810.0",
+    "aws-cdk": "^2.1015.0",
+    "aws-cdk-lib": "^2.195.0",
+    "constructs": "^10.4.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.18",
+    "esbuild": "^0.25.4"
+  }
+}

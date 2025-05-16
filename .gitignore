@@ -1,0 +1,35 @@
+# Node & Bun
+node_modules/
+bun.lockb
+
+# Build outputs
+dist/
+cdk.out/
+*.tsbuildinfo
+
+# AWS CDK
+cdk.context.json
+cdk.out/
+*.template.json
+
+# Lambda bundle output
+lambda/**/node_modules/
+lambda/**/dist/
+
+# VS Code
+.vscode/
+
+# Logs and system files
+*.log
+.DS_Store
+.env
+.env.local
+.env.production
+.env.development
+
+# Optional frontend ignores (if using React/Vite)
+frontend/dist/
+frontend/node_modules/
+frontend/.next/
+frontend/.cache/
+
