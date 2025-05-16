@@ -7,21 +7,34 @@ export class VideoStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // VPC (default with public subnets)
+    // VPC for LiveKit (public and private subnets)
     const vpc = new ec2.Vpc(this, 'LiveKitVPC', {
       maxAzs: 2,
+      subnetConfiguration: [
+        {
+          cidrMask: 24,
+          name: 'public-subnet',
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {
+          cidrMask: 24,
+          name: 'private-subnet',
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+      ],
     });
 
-    // Security Group for LiveKit + TURN
-    const sg = new ec2.SecurityGroup(this, 'LiveKitSG', {
+    // Security Group for Internal TURN and LiveKit Communication
+    const internalSg = new ec2.SecurityGroup(this, 'LiveKitSG', {
       vpc,
+      description: 'Internal-only SG for LiveKit and TURN',
       allowAllOutbound: true,
-      description: 'Allow WebRTC and TURN traffic',
     });
 
-    sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.udp(3478), 'TURN STUN (UDP)');
-    sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(5349), 'TURN STUN (TCP)');
-    sg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.udpRange(50000, 60000), 'Media (UDP)');
+    // Allow internal traffic between LiveKit and TURN
+    internalSg.addIngressRule(internalSg, ec2.Port.tcp(3478), 'TURN STUN (UDP)');
+    internalSg.addIngressRule(internalSg, ec2.Port.tcp(5349), 'TURN TLS (TCP)');
+    internalSg.addIngressRule(internalSg, ec2.Port.udpRange(50000, 60000), 'Media (UDP)');
 
     const livekitUserData = ec2.UserData.forLinux();
     livekitUserData.addCommands(
@@ -43,7 +56,10 @@ export class VideoStack extends Stack {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM),
       machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       vpc,
-      securityGroup: sg,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroup: internalSg,
       keyName: 'your-keypair-name', // required for SSH access
       userData: livekitUserData,
     });
@@ -86,7 +102,10 @@ export class VideoStack extends Stack {
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.SMALL),
       machineImage: ec2.MachineImage.latestAmazonLinux2023(),
       vpc,
-      securityGroup: sg,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+      },
+      securityGroup: internalSg,
       keyName: 'your-keypair-name',
       userData: coturnUserData,
     });
