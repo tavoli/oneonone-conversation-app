@@ -1,7 +1,8 @@
 {
   "scripts": {
-    "build:lambdas": "bun run build-lambdas.ts",
-    "deploy": "bun run build:lambdas && cdk deploy"
+    "build:lambdas": "bun run scripts/build-lambdas.ts",
+    "deploy": "bun run build:lambdas && cdk deploy --all",
+    "destroy": "cdk destroy --all"
   },
   "dependencies": {
     "@aws-sdk/client-secrets-manager": "^3.810.0",

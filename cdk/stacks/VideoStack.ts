@@ -60,7 +60,7 @@ export class VideoStack extends Stack {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
       securityGroup: internalSg,
-      keyName: 'your-keypair-name', // required for SSH access
+      keyPair: ec2.KeyPair.fromKeyPairName(this, 'LiveKitKeyPair', 'oneonone-mvp-key'),
       userData: livekitUserData,
     });
 
@@ -106,7 +106,7 @@ export class VideoStack extends Stack {
         subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
       },
       securityGroup: internalSg,
-      keyName: 'your-keypair-name',
+      keyPair: ec2.KeyPair.fromKeyPairName(this, 'TurnKeyPair', 'oneonone-mvp-key'),
       userData: coturnUserData,
     });
 

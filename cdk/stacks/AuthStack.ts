@@ -1,6 +1,7 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as cdk from 'aws-cdk-lib';
 
 export class AuthStack extends Stack {
   public readonly userPool: cognito.UserPool;
@@ -17,13 +18,13 @@ export class AuthStack extends Stack {
       autoVerify: { email: true },
     });
 
-    const googleClientId = this.node.tryGetContext('googleClientId') || 'dummy-client-id';
-    const googleClientSecret = this.node.tryGetContext('googleClientSecret') || 'dummy-secret';
+    const googleClientId = this.node.tryGetContext('googleClientId');
+    const googleClientSecret = this.node.tryGetContext('googleClientSecret');
 
     // 2. Google Identity Provider
     new cognito.UserPoolIdentityProviderGoogle(this, 'Google', {
       clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientSecretValue: cdk.SecretValue.unsafePlainText(googleClientSecret),
       userPool: this.userPool,
       scopes: ['openid', 'email', 'profile'],
       attributeMapping: {
